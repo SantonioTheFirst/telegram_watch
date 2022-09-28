@@ -1,33 +1,39 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-
-#import time
-#start = time.time()
 from telethon import TelegramClient, sync
 from datetime import datetime
 from telethon.tl.functions.photos import UploadProfilePhotoRequest, DeletePhotosRequest
 from telethon.tl.functions.account import UpdateProfileRequest
-from config import api_id, api_hash
-#print(f'Import time {time.time() - start}')
+from telethon.sessions import StringSession
+from config import api_id, api_hash, phone, session
+import os
 
-#connection_time = time.time()
+print('import ok')
+
+# with TelegramClient(StringSession(session), api_id, api_hash) as client:
+#     print(client.session.save()) # generate and save string session -- need for the first run
 
 
-client = TelegramClient("ananasiko", api_id, api_hash)
-client.start()
-#print(f'Connection time {time.time() - connection_time}')
+def main():
+    now = datetime.now().strftime('%H:%M')
+    pwd = os.path.dirname(os.path.realpath(__file__))
+    print(pwd)
+    print('now ok')
 
-#upload_time = time.time()
+    with TelegramClient(StringSession(session), api_id=api_id, api_hash=api_hash).start() as client:
+        print('session ok')
+        client(DeletePhotosRequest(client.get_profile_photos('me')))
+        print('delete ok')
+        file = client.upload_file(f'{pwd}/time_images/{now}.jpg')
+        print(type(file))
+        client(UploadProfilePhotoRequest(file))
+        print('update ok')
+        client(UpdateProfileRequest(
+            first_name = f"{now}",
+            about = f"{now} "
+        ))
 
-now = datetime.now().strftime('%H:%M')
-client(DeletePhotosRequest(client.get_profile_photos('me')))
-file = client.upload_file(f"time_images/{now}.jpg")
-client(UploadProfilePhotoRequest(file))
-client(UpdateProfileRequest(
-first_name = f"{now}",
-about = f"{now} "
-))
-#print(f'Upload time {time.time() - upload_time}')
-#print(f'Total {time.time() - start}')
 
+main()
+print('end')
